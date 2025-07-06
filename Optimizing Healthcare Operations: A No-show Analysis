@@ -1,0 +1,260 @@
+
+
+
+
+Extracting Data or Data Analysis Part~
+No show v/s Age Group-
+select 
+Case
+when "Age" between 0 and 15 then '0-15'
+when "Age" between 16 and 30 then '16-30'
+when "Age" between 31 and 45 then '31-45'
+when "Age" between 46 and 60 then '46-60'
+when "Age" between 61 and 75 then '61-75'
+Else '76+'
+end as Age_group,
+count(*) as Total_appointments,
+Sum( Case when "No-show" = 1 then 1 Else 0 END) as Total_No_shows,
+Round(100*Sum( Case when "No-show" = 1 then 1 Else 0 END)/count(*),2) as Rate_percent_no_shows
+from patient_appointment
+group by Age_group
+order by Age_group;  /// Downloaded the csv file to analysis in Power BI
+
+
+No show v/s Gender
+
+Select 
+"Gender",
+count(*) as Total_appointments,
+Sum (Case when "No-show" = 1 then 1 else 0 end) as Total_no_shows,
+Round(100*Sum (Case when "No-show" = 1 then 1 else 0 end)/Count(*), 2) as Percent_rate_no_show
+from patient_appointment
+group by "Gender"
+order by "Gender";
+
+No show v/s SMS_received
+select
+case 
+when "SMS_received" = 1 then 'Yes'
+else 'No'
+end as "SMS-received",
+count(*) as Total_Appointments,
+Sum(case when "No-show" = 1 then 1 else 0 end) as Total_No_shows,
+Round(100*Sum(case when "No-show" = 1 then 1 else 0 end)/Count(*), 2) as percent_rate_No_show
+from patient_appointment
+group by "SMS-received"
+order by "SMS-received";
+
+or 
+
+select
+"SMS_received",
+count(*) as Total_Appointments,
+Sum(case when "No-show" = 1 then 1 else 0 end) as Total_No_shows,
+Round(100*Sum(case when "No-show" = 1 then 1 else 0 end)/Count(*), 2) as percent_rate_No_show
+from patient_appointment
+group by "SMS_received"
+order by "SMS_received";
+
+No show v/s Lead time
+
+with lead_time_data as (select 
+"AppointmentID",
+"AppointmentDay",
+"ScheduledDay",
+"AppointmentDay" - "ScheduledDay" as lead_time,
+"No-show"
+from patient_appointment)
+select
+Case 
+when "lead_time" < 0 then 'Invalid'
+when "lead_time" between 0 AND 10 then '0-10'
+when "lead_time" between 11 and 20 then '11-20'
+when "lead_time" between 21 and 30 then '21-30'
+when "lead_time" between 31 and 40 then '31-40'
+when "lead_time" between 41 and 50 then '41-50'
+when "lead_time" between 51 and 60 then '51-60'
+else '60+'
+end Lead_time_group,
+count(*) as AppointmentID,
+Sum(case when "No-show" = 1 then 1 else 0 end) as Total_no_show,
+Round(100*Sum(case when "No-show" = 1 then 1 else 0 end)/count(*), 2) as percent_rate_no_show
+from lead_time_data
+group by Lead_time_group
+order by Lead_time_group;
+
+ 
+
+No show v/s Weekday
+
+with Weekday_Q as (select extract(Dow from "AppointmentDay") AS weekday, "No-show"
+from patient_Appointment)
+select case 
+when weekday = 1 then 'Monday'
+when weekday = 2 then 'Tuesday'
+when weekday = 3 then 'Wednesday'
+when weekday = 4 then 'Thursday'
+when weekday = 5 then 'Friday'
+when weekday = 6 then 'Saturday'
+else 'Sunday'
+end Weekday_name,
+count(*) as Total_appointments,
+Sum(case when "No-show" = 1 then 1 else 0 end) as total_no_show,
+ROund(100* Sum(case when "No-show" = 1 then 1 else 0 end)/count(*), 2) as rate_percent_no_show
+from Weekday_Q
+Group by weekday
+order by weekday;
+
+ 
+No show v/s disease with sorting
+
+with disease_data as (select
+case
+when "Hypertension" = 1 and "Diabetes" = 1 and "Alcoholism" = 1 then 'All the chronic Disease'
+when "Hypertension" = 1 and "Diabetes" = 1 then 'Hypertension & Diabetes'
+when "Hypertension" = 1 and "Alcoholism" = 1 then 'Hypertension & Alcoholism'
+when "Alcoholism" = 1 and "Diabetes" = 1 then 'Alcoholism & Diabetes'
+when "Hypertension" = 1 then 'Hypertension'
+when "Diabetes" = 1 then 'Diabetes'
+when "Alcoholism" = 1 then 'Alcoholism'
+else 'Neither'
+end as chronic_Disease, 
+
+case
+when "Hypertension" = 1 and "Diabetes" = 1 and "Alcoholism" = 1 then 1
+when "Hypertension" = 1 and "Diabetes" = 1 then 2
+when "Hypertension" = 1 and "Alcoholism" = 1 then 3
+when "Alcoholism" = 1 and "Diabetes" = 1 then 4
+when "Hypertension" = 1 then 5
+when "Diabetes" = 1 then 6
+when "Alcoholism" = 1 then 7
+else 8
+end as sort_order, ---Sorting
+
+"No-show"
+
+from patient_appointment)
+
+Select 
+chronic_disease,
+count(*) as Total_appointment,
+Sum(case when "No-show" = 1 then 1 else 0 end) as total_no_shows,
+Round(100*Sum(case when "No-show" = 1 then 1 else 0 end)/count(*), 2)
+from disease_data
+group by chronic_Disease, sort_order
+order by sort_order;
+
+
+No show v/s Gender v/s Disease
+
+with disease_data as (select
+case
+when "Hypertension" = 1 and "Diabetes" = 1 and "Alcoholism" = 1 then 'All the chronic Disease'
+when "Hypertension" = 1 and "Diabetes" = 1 then 'Hypertension & Diabetes'
+when "Hypertension" = 1 and "Alcoholism" = 1 then 'Hypertension & Alcoholism'
+when "Alcoholism" = 1 and "Diabetes" = 1 then 'Alcoholism & Diabetes'
+when "Hypertension" = 1 then 'Hypertension'
+when "Diabetes" = 1 then 'Diabetes'
+when "Alcoholism" = 1 then 'Alcoholism'
+else 'Neither'
+end as chronic_Disease, 
+
+case
+when "Hypertension" = 1 and "Diabetes" = 1 and "Alcoholism" = 1 then 1
+when "Hypertension" = 1 and "Diabetes" = 1 then 2
+when "Hypertension" = 1 and "Alcoholism" = 1 then 3
+when "Alcoholism" = 1 and "Diabetes" = 1 then 4
+when "Hypertension" = 1 then 5
+when "Diabetes" = 1 then 6
+when "Alcoholism" = 1 then 7
+else 8
+end as sort_order, ---Sorting
+
+"No-show", "Gender"
+
+from patient_appointment)
+
+Select 
+chronic_disease,
+count(*) as Total_appointment,
+Sum(case when "Gender" = 'M' then 1 else 0 end) as Male,
+Sum(case when "Gender" = 'F' then 1 else 0 end) as Female,
+Sum(case when "No-show" = 1 then 1 else 0 end) as total_no_shows,
+Sum(case when "No-show" = 1 And "Gender" = 'M' then 1 else 0 end) as Male_no_show,
+Sum(case when "No-show" = 1 And "Gender" = 'F' then 1 else 0 end) as Female_no_show,
+Round(100*Sum(case when "Gender" = 'M' And "No-show" = 1 then 1 else 0 end)/Sum(case when "Gender" = 'M' then 1 else 0 end), 2) as male_no_show_percent,
+Round(100*Sum(case when "Gender" = 'F' And "No-show" = 1 then 1 else 0 end)/Sum(case when "Gender" = 'F' then 1 else 0 end), 2) as female_no_show_percent
+from disease_data
+group by chronic_Disease, sort_order
+order by sort_order;
+
+
+No show vs Age vs Neigh:
+
+select 
+"Neighbourhood",
+Case
+when "Age" between 0 and 15 then '0-15 Yrs'
+when "Age" between 16 and 30 then '16-30 Yrs'
+when "Age" between 31 and 45 then '31-45 Yrs'
+when "Age" between 46 and 60 then '46-60 Yrs'
+when "Age" between 61 and 75 then '61-75 Yrs'
+Else '76+ Yrs'
+end "Age_group",
+count(*) as Total_appointment,
+Sum(case when "No-show" = 1 then 1 else 0 end) as no_total_show,
+Round(100* Sum(case when "No-show" = 1 then 1 else 0 end)/count(*), 2) as percent_rate_no_show
+from patient_appointment
+group by  "Neighbourhood" , 
+CASE
+           WHEN "Age" BETWEEN 0 AND 15 THEN '0-15 Yrs'
+           WHEN "Age" BETWEEN 16 AND 30 THEN '16-30 Yrs'
+           WHEN "Age" BETWEEN 31 AND 45 THEN '31-45 Yrs'
+           WHEN "Age" BETWEEN 46 AND 60 THEN '46-60 Yrs'
+           WHEN "Age" BETWEEN 61 AND 75 THEN '61-75 Yrs'
+           ELSE '76+ Yrs'
+         END
+order by "Neighbourhood", "Age_group";
+
+
+
+
+No show v/s PatientID
+
+Select "PatientID" Unique,
+Count(*) as Total_appointment,
+Sum(case when "No-show" = 1 then 1 else 0 end) as Total_no_show,
+Round(100*Sum(case when "No-show" = 1 then 1 else 0 end)/count(*), 2)
+from patient_appointment
+group by "PatientID"
+Order by "PatientID";
+
+
+No show vs Scholarship
+
+select 
+case
+when "Scholarship" = 1 then 'Yes'
+else 'No'
+end as "Scholarship_data",
+count(*) as Total_appointment,
+Sum(case when "No-show" = 1 then 1 else 0 end) as Total_no_show,
+ROund(100*Sum(case when "No-show" = 1 then 1 else 0 end)/count(*), 2)
+from patient_appointment
+group by "Scholarship_data";
+
+
+No show v/s Handicap
+
+select
+case 
+when "Handicap" = 1 then 'Yes'
+else 'No'
+end as Handicap_D,
+count(*) as Total_appointment,
+Sum(case when "No-show" =1 then 1 else 0 end) as Total_no_show,
+Round(100*Sum(case when "No-show" =1 then 1 else 0 end)/count(*), 2) as percent_rate_no_show
+from patient_appointment
+group by Handicap_D;
+
+
