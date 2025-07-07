@@ -1,7 +1,7 @@
-Extracting Data or Data Analysis Part~
+-- Extracting Data or Data Analysis Part~
 
 
-No show v/s Age Group-
+
 select 
 Case
 when "Age" between 0 and 15 then '0-15'
